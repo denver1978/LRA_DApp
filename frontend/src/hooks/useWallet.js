@@ -4,6 +4,25 @@ import { createEVMClient } from "@metamask/connect-evm";
 
 const SEPOLIA_CHAIN_ID = 11155111;
 
+function getMetaMaskProvider() {
+  if (!window.ethereum) return null;
+
+  // If multiple wallets are injected, pick MetaMask specifically
+  if (Array.isArray(window.ethereum.providers)) {
+    const metaMaskProvider = window.ethereum.providers.find(
+      (provider) => provider.isMetaMask
+    );
+    if (metaMaskProvider) return metaMaskProvider;
+  }
+
+  // Single provider case
+  if (window.ethereum.isMetaMask) {
+    return window.ethereum;
+  }
+
+  return null;
+}
+
 export default function useWallet() {
   const [account, setAccount] = useState("");
   const [provider, setProvider] = useState(null);
@@ -45,16 +64,15 @@ export default function useWallet() {
 
   const connectWallet = async () => {
     try {
-      let injected = window.ethereum;
+      // ✅ First priority: MetaMask extension in desktop browser
+      const metaMaskProvider = getMetaMaskProvider();
 
-      // 🔥 PRIORITY: use MetaMask extension if available
-      if (injected) {
-        console.log("Using MetaMask extension");
+      if (metaMaskProvider) {
+        console.log("Using MetaMask injected provider");
 
-        const browserProvider = new BrowserProvider(injected);
+        await metaMaskProvider.request({ method: "eth_requestAccounts" });
 
-        await injected.request({ method: "eth_requestAccounts" });
-
+        const browserProvider = new BrowserProvider(metaMaskProvider);
         const network = await browserProvider.getNetwork();
 
         if (Number(network.chainId) !== SEPOLIA_CHAIN_ID) {
@@ -72,9 +90,9 @@ export default function useWallet() {
         return;
       }
 
-      // 🔥 FALLBACK: MetaMask Connect (mobile / tablet)
+      // ✅ Fallback for mobile / tablet
       if (!clientRef.current) {
-        alert("Wallet connector not ready");
+        alert("Wallet connector not ready.");
         return;
       }
 
@@ -84,7 +102,6 @@ export default function useWallet() {
         chainIds: ["0xaa36a7"]
       });
 
-      // ⚠️ DO NOT wrap directly → causes error
       if (!evmProvider?.accounts || !evmProvider?.chainId) {
         throw new Error("Invalid wallet provider");
       }
@@ -97,7 +114,8 @@ export default function useWallet() {
       }
 
       setAccount(address);
-
+      setProvider(null);
+      setSigner(null);
     } catch (error) {
       console.error("Wallet connection error:", error);
       alert(error?.message || "Failed to connect wallet.");
