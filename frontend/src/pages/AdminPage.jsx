@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-import ConnectWallet from "../components/ConnectWallet";
-import WalletRoleStatus from "../components/WalletRoleStatus";
-import ViewAuthorities from "../components/ViewAuthorities";
-import SetAuthoritiesForm from "../components/SetAuthoritiesForm";
+import PageHeaderPanel from "../components/PageHeaderPanel";
 
-export default function AdminPage({ account, connectWallet, contract }) {
+export default function AdminPage({
+  account,
+  connectWallet,
+  contract
+}) {
   return (
     <>
       <div className="top-nav">
@@ -18,16 +19,37 @@ export default function AdminPage({ account, connectWallet, contract }) {
 
         <h1 className="page-title">Owner / Admin</h1>
         <p className="page-subtitle">
-          Manage role assignments and review the currently configured authorities.
+          Manage authority addresses and administration settings.
         </p>
 
-        <div className="card">
-          <ConnectWallet account={account} connectWallet={connectWallet} />
-        </div>
+        <PageHeaderPanel
+          account={account}
+          connectWallet={connectWallet}
+          contract={contract}
+          latestCID=""
+          expectedRole="Owner / Admin"
+          useRoleGuard={false}
+        />
 
-        <WalletRoleStatus contract={contract} account={account} />
-        <ViewAuthorities contract={contract} />
-        <SetAuthoritiesForm contract={contract} />
+        {!account && (
+          <div className="card">
+            <p className="section-note">Connect your wallet first.</p>
+          </div>
+        )}
+
+        {account && !contract && (
+          <div className="card">
+            <p className="section-note">Contract not loaded yet.</p>
+          </div>
+        )}
+
+        {account && contract && (
+          <div className="card">
+            <p className="section-note">
+              Admin dashboard loaded successfully.
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
