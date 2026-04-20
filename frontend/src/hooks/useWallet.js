@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { BrowserProvider } from "ethers";
 import { createEVMClient } from "@metamask/connect-evm";
