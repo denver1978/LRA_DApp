@@ -1,11 +1,10 @@
 import { Link } from "react-router-dom";
-import PageHeaderPanel from "../components/PageHeaderPanel";
+import ConnectWallet from "../components/ConnectWallet";
+import WalletRoleStatus from "../components/WalletRoleStatus";
+import ViewAuthorities from "../components/ViewAuthorities";
+import SetAuthoritiesForm from "../components/SetAuthoritiesForm";
 
-export default function AdminPage({
-  account,
-  connectWallet,
-  contract
-}) {
+export default function AdminPage({ account, connectWallet, contract }) {
   return (
     <>
       <div className="top-nav">
@@ -19,17 +18,12 @@ export default function AdminPage({
 
         <h1 className="page-title">Owner / Admin</h1>
         <p className="page-subtitle">
-          Manage authority addresses and administration settings.
+          Manage role assignments and review the currently configured authorities.
         </p>
 
-        <PageHeaderPanel
-          account={account}
-          connectWallet={connectWallet}
-          contract={contract}
-          latestCID=""
-          expectedRole="Owner / Admin"
-          useRoleGuard={false}
-        />
+        <div className="card">
+          <ConnectWallet account={account} connectWallet={connectWallet} />
+        </div>
 
         {!account && (
           <div className="card">
@@ -44,11 +38,11 @@ export default function AdminPage({
         )}
 
         {account && contract && (
-          <div className="card">
-            <p className="section-note">
-              Admin dashboard loaded successfully.
-            </p>
-          </div>
+          <>
+            <WalletRoleStatus contract={contract} account={account} />
+            <ViewAuthorities contract={contract} />
+            <SetAuthoritiesForm contract={contract} />
+          </>
         )}
       </div>
     </>
