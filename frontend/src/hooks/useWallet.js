@@ -2,13 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { BrowserProvider } from "ethers";
 import { createEVMClient } from "@metamask/connect-evm";
 
-const SEPOLIA_CHAIN_ID_DECIMAL = 11155111;
+const SEPOLIA_CHAIN_ID = 11155111;
 
 export default function useWallet() {
   const [account, setAccount] = useState("");
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
-  const [walletProvider, setWalletProvider] = useState(null);
 
   const clientRef = useRef(null);
 
@@ -18,7 +17,7 @@ export default function useWallet() {
         const infuraApiKey = import.meta.env.VITE_INFURA_API_KEY;
 
         if (!infuraApiKey) {
-          console.error("Missing VITE_INFURA_API_KEY in .env");
+          console.error("Missing VITE_INFURA_API_KEY");
           return;
         }
 
@@ -36,7 +35,6 @@ export default function useWallet() {
         });
 
         clientRef.current = client;
-        console.log("MetaMask Connect client initialized");
       } catch (error) {
         console.error("MetaMask Connect init error:", error);
       }
@@ -47,32 +45,59 @@ export default function useWallet() {
 
   const connectWallet = async () => {
     try {
-      if (!clientRef.current) {
-        alert("Wallet connector is still initializing. Try again in a moment.");
+      let injected = window.ethereum;
+
+      // 🔥 PRIORITY: use MetaMask extension if available
+      if (injected) {
+        console.log("Using MetaMask extension");
+
+        const browserProvider = new BrowserProvider(injected);
+
+        await injected.request({ method: "eth_requestAccounts" });
+
+        const network = await browserProvider.getNetwork();
+
+        if (Number(network.chainId) !== SEPOLIA_CHAIN_ID) {
+          alert("Please switch MetaMask to Sepolia network.");
+          return;
+        }
+
+        const signerInstance = await browserProvider.getSigner();
+        const address = await signerInstance.getAddress();
+
+        setProvider(browserProvider);
+        setSigner(signerInstance);
+        setAccount(address);
+
         return;
       }
+
+      // 🔥 FALLBACK: MetaMask Connect (mobile / tablet)
+      if (!clientRef.current) {
+        alert("Wallet connector not ready");
+        return;
+      }
+
+      console.log("Using MetaMask Connect fallback");
 
       const evmProvider = await clientRef.current.connect({
         chainIds: ["0xaa36a7"]
       });
 
-      const browserProvider = new BrowserProvider(evmProvider);
-      const network = await browserProvider.getNetwork();
+      // ⚠️ DO NOT wrap directly → causes error
+      if (!evmProvider?.accounts || !evmProvider?.chainId) {
+        throw new Error("Invalid wallet provider");
+      }
 
-      if (Number(network.chainId) !== SEPOLIA_CHAIN_ID_DECIMAL) {
-        alert("Please switch MetaMask to the Sepolia test network first.");
+      const address = evmProvider.accounts[0];
+
+      if (parseInt(evmProvider.chainId, 16) !== SEPOLIA_CHAIN_ID) {
+        alert("Please switch MetaMask to Sepolia network.");
         return;
       }
 
-      const signerInstance = await browserProvider.getSigner();
-      const address = await signerInstance.getAddress();
-
-      setWalletProvider(evmProvider);
-      setProvider(browserProvider);
-      setSigner(signerInstance);
       setAccount(address);
 
-      console.log("Wallet connected:", address);
     } catch (error) {
       console.error("Wallet connection error:", error);
       alert(error?.message || "Failed to connect wallet.");
@@ -85,20 +110,18 @@ export default function useWallet() {
         await clientRef.current.disconnect();
       }
     } catch (error) {
-      console.error("Wallet disconnect error:", error);
-    } finally {
-      setAccount("");
-      setProvider(null);
-      setSigner(null);
-      setWalletProvider(null);
+      console.error("Disconnect error:", error);
     }
+
+    setAccount("");
+    setProvider(null);
+    setSigner(null);
   };
 
   return {
     account,
     provider,
     signer,
-    walletProvider,
     connectWallet,
     disconnectWallet
   };
