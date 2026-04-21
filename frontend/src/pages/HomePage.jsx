@@ -4,6 +4,7 @@ import QuickDemoStart from "../components/QuickDemoStart";
 import WorkflowDiagram from "../components/WorkflowDiagram";
 import FooterNote from "../components/FooterNote";
 import PresentationBanner from "../components/PresentationBanner";
+import MobileNotice from "../components/MobileNotice";
 
 import {
   Settings,
@@ -19,11 +20,8 @@ import {
 export default function HomePage({ account, connectWallet, disconnectWallet, contract }) {
   const { allowedRoles, loadingRoles } = useDashboardAccess(contract, account);
 
-  console.log("HomePage account:", account);
-  console.log("HomePage contract:", contract);
-  console.log("HomePage allowedRoles:", [...allowedRoles]);
-  
-  
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
   const canAccess = (role) => allowedRoles.has(role);
 
   const roleLabels = {
@@ -85,6 +83,10 @@ export default function HomePage({ account, connectWallet, disconnectWallet, con
       </div>
 
       <div className="page-container">
+
+        {/* ✅ MOBILE NOTICE FIX */}
+        {isMobile && <MobileNotice />}
+
         <div className="home-wallet-status">
           <button onClick={connectWallet} className="wallet-connect-btn">
             Connect Wallet
@@ -219,6 +221,7 @@ export default function HomePage({ account, connectWallet, disconnectWallet, con
         <div className="quick-start-section">
           <QuickDemoStart />
         </div>
+
         <WorkflowDiagram />
         <FooterNote />
       </div>
