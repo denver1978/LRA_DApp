@@ -1,4 +1,4 @@
-{/* export default function ConnectWallet({ account, connectWallet }) {
+export default function ConnectWallet({ account, connectWallet }) {
   return (
     <div style={{ marginBottom: "20px" }}>
       <button onClick={connectWallet}>
@@ -12,8 +12,11 @@
       )}
     </div>
   );
-} */}
+}
 
+
+
+{/*
 import { useState } from "react";
 import { BrowserProvider } from "ethers";
 
@@ -78,3 +81,5 @@ export default function useWallet() {
     disconnectWallet
   };
 }
+
+*/}

@@ -25,25 +25,9 @@ export default function AdminPage({ account, connectWallet, contract }) {
           <ConnectWallet account={account} connectWallet={connectWallet} />
         </div>
 
-        {!account && (
-          <div className="card">
-            <p className="section-note">Connect your wallet first.</p>
-          </div>
-        )}
-
-        {account && !contract && (
-          <div className="card">
-            <p className="section-note">Contract not loaded yet.</p>
-          </div>
-        )}
-
-        {account && contract && (
-          <>
-            <WalletRoleStatus contract={contract} account={account} />
-            <ViewAuthorities contract={contract} />
-            <SetAuthoritiesForm contract={contract} />
-          </>
-        )}
+        <WalletRoleStatus contract={contract} account={account} />
+        <ViewAuthorities contract={contract} />
+        <SetAuthoritiesForm contract={contract} />
       </div>
     </>
   );
