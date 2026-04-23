@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function RDPropertyTransferListing({
   contract,
@@ -14,16 +14,19 @@ export default function RDPropertyTransferListing({
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [coordinateCache, setCoordinateCache] = useState({});
+  const [loadingMapLandId, setLoadingMapLandId] = useState("");
+
   const itemsPerPage = 5;
+  const loadingRef = useRef(false);
 
   const loadTransferListing = async () => {
-    if (!contract) {
-      setItems([]);
-      return;
-    }
+    if (!contract || loadingRef.current) return;
 
     try {
+      loadingRef.current = true;
       setLoading(true);
+
       const found = [];
 
       for (let i = 1; i <= maxLandId; i++) {
@@ -36,23 +39,6 @@ export default function RDPropertyTransferListing({
             sale = await contract.sales(BigInt(i));
           } catch {
             sale = null;
-          }
-
-          // ✅ Fetch coordinates from metadata
-          let latitude = "";
-          let longitude = "";
-
-          try {
-            if (land.metadataCID) {
-              const res = await fetch(`https://gateway.pinata.cloud/ipfs/${land.metadataCID}`);
-              if (res.ok) {
-                const data = await res.json();
-                latitude = data?.coordinates?.latitude || "";
-                longitude = data?.coordinates?.longitude || "";
-              }
-            }
-          } catch (err) {
-            console.error("Metadata fetch error:", err);
           }
 
           let saleStatus = "No Active Sale";
@@ -89,8 +75,7 @@ export default function RDPropertyTransferListing({
             propertyType: land.propertyType || "",
             owner: land.owner || "",
             buyer,
-            latitude,
-            longitude,
+            metadataCID: land.metadataCID || "",
             saleStatus,
             approvalStatus
           });
@@ -106,17 +91,95 @@ export default function RDPropertyTransferListing({
       setItems([]);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   };
 
   useEffect(() => {
-    loadTransferListing();
-  }, [contract, refreshKey]);
+    if (contract) {
+      loadTransferListing();
+    }
+  }, [contract, refreshKey, maxLandId]);
+
+  // ✅ Real-time refresh on every mined block
+  useEffect(() => {
+    const provider = contract?.runner?.provider;
+    if (!provider || typeof provider.on !== "function") return;
+
+    let timeoutId = null;
+
+    const handleBlock = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        loadTransferListing();
+      }, 300);
+    };
+
+    provider.on("block", handleBlock);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (typeof provider.off === "function") {
+        provider.off("block", handleBlock);
+      }
+    };
+  }, [contract, maxLandId]);
 
   const handleSelect = (item) => {
     setSelectedLandId(item.landId);
     if (onSelectLandId) {
       onSelectLandId(item.landId);
+    }
+  };
+
+  const handleViewMap = async (item) => {
+    try {
+      if (!item.metadataCID) {
+        alert("No metadata CID found for this land.");
+        return;
+      }
+
+      const cached = coordinateCache[item.landId];
+      if (cached?.latitude && cached?.longitude) {
+        window.open(
+          `https://www.google.com/maps?q=${cached.latitude},${cached.longitude}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+        return;
+      }
+
+      setLoadingMapLandId(item.landId);
+
+      const res = await fetch(`https://gateway.pinata.cloud/ipfs/${item.metadataCID}`);
+      if (!res.ok) {
+        throw new Error("Failed to fetch metadata from IPFS.");
+      }
+
+      const data = await res.json();
+      const latitude = data?.coordinates?.latitude || "";
+      const longitude = data?.coordinates?.longitude || "";
+
+      if (!latitude || !longitude) {
+        alert("No coordinates available in this property metadata.");
+        return;
+      }
+
+      setCoordinateCache((prev) => ({
+        ...prev,
+        [item.landId]: { latitude, longitude }
+      }));
+
+      window.open(
+        `https://www.google.com/maps?q=${latitude},${longitude}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    } catch (error) {
+      console.error("Map load error:", error);
+      alert(error?.message || "Failed to load map coordinates.");
+    } finally {
+      setLoadingMapLandId("");
     }
   };
 
@@ -236,6 +299,7 @@ export default function RDPropertyTransferListing({
           <p className="section-note" style={{ marginTop: "10px" }}>
             ← Scroll horizontally to view more details →
           </p>
+
           <div className="table-wrap" style={{ marginTop: "14px" }}>
             <table className="custom-table">
               <thead>
@@ -265,30 +329,30 @@ export default function RDPropertyTransferListing({
                     <td className="table-break">{item.buyer}</td>
                     <td>{item.location}</td>
                     <td>{item.propertyType}</td>
+
                     <td>
                       <span className={getBadgeClass(item.saleStatus)}>
                         {item.saleStatus}
                       </span>
                     </td>
+
                     <td>
                       <span className={getBadgeClass(item.approvalStatus)}>
                         {item.approvalStatus}
                       </span>
                     </td>
+
                     <td>
-                      {item.latitude && item.longitude ? (
-                        <a
-                          href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="table-link-btn"
-                        >
-                          📍 View
-                        </a>
-                      ) : (
-                        "-"
-                      )}
+                      <button
+                        type="button"
+                        className="table-link-btn"
+                        onClick={() => handleViewMap(item)}
+                        disabled={loadingMapLandId === item.landId}
+                      >
+                        {loadingMapLandId === item.landId ? "Loading..." : "📍 View"}
+                      </button>
                     </td>
+
                     <td>
                       <div className="table-actions">
                         {selectedLandId === item.landId && (

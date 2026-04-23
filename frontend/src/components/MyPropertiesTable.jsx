@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function MyPropertiesTable({
   contract,
   account,
-  role, // "seller" or "buyer"
+  role,
   onSelectLandId,
   refreshKey,
   maxLandId = 50
@@ -16,16 +16,22 @@ export default function MyPropertiesTable({
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [coordinateCache, setCoordinateCache] = useState({});
+  const [loadingMapLandId, setLoadingMapLandId] = useState("");
+
   const itemsPerPage = 5;
+  const loadingRef = useRef(false);
 
   const loadProperties = async () => {
-    if (!contract || !account) {
-      setItems([]);
+    if (!contract || !account || loadingRef.current) {
+      if (!contract || !account) setItems([]);
       return;
     }
 
     try {
+      loadingRef.current = true;
       setLoading(true);
+
       const found = [];
 
       for (let i = 1; i <= maxLandId; i++) {
@@ -35,23 +41,6 @@ export default function MyPropertiesTable({
 
           const owner = land.owner?.toLowerCase();
           let sale = null;
-
-          // ✅ NEW: fetch coordinates from metadata
-          let latitude = "";
-          let longitude = "";
-
-          try {
-            if (land.metadataCID) {
-              const res = await fetch(`https://gateway.pinata.cloud/ipfs/${land.metadataCID}`);
-              if (res.ok) {
-                const data = await res.json();
-                latitude = data?.coordinates?.latitude || "";
-                longitude = data?.coordinates?.longitude || "";
-              }
-            }
-          } catch (err) {
-            console.error("Metadata fetch error:", err);
-          }
 
           try {
             sale = await contract.sales(BigInt(i));
@@ -75,9 +64,7 @@ export default function MyPropertiesTable({
               tctNumber: land.tctNumber || "",
               location: land.location || "",
               propertyType: land.propertyType || "",
-              owner: land.owner || "",
-              latitude,
-              longitude,
+              metadataCID: land.metadataCID || "",
               status
             });
           }
@@ -96,9 +83,7 @@ export default function MyPropertiesTable({
               tctNumber: land.tctNumber || "",
               location: land.location || "",
               propertyType: land.propertyType || "",
-              owner: land.owner || "",
-              latitude,
-              longitude,
+              metadataCID: land.metadataCID || "",
               status
             });
           }
@@ -113,16 +98,89 @@ export default function MyPropertiesTable({
       console.error("Load properties error:", error);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   };
 
   useEffect(() => {
     loadProperties();
-  }, [contract, account, refreshKey, role]);
+  }, [contract, account, refreshKey, role, maxLandId]);
+
+  // ✅ Real-time refresh on every mined block
+  useEffect(() => {
+    const provider = contract?.runner?.provider;
+    if (!provider || typeof provider.on !== "function") return;
+
+    let timeoutId = null;
+
+    const handleBlock = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        loadProperties();
+      }, 300);
+    };
+
+    provider.on("block", handleBlock);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (typeof provider.off === "function") {
+        provider.off("block", handleBlock);
+      }
+    };
+  }, [contract, account, role, maxLandId]);
+
+  const handleViewMap = async (item) => {
+    try {
+      if (!item.metadataCID) {
+        alert("No metadata available.");
+        return;
+      }
+
+      const cached = coordinateCache[item.landId];
+      if (cached?.latitude && cached?.longitude) {
+        window.open(
+          `https://www.google.com/maps?q=${cached.latitude},${cached.longitude}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+        return;
+      }
+
+      setLoadingMapLandId(item.landId);
+
+      const res = await fetch(`https://gateway.pinata.cloud/ipfs/${item.metadataCID}`);
+      if (!res.ok) throw new Error("Failed to fetch metadata");
+
+      const data = await res.json();
+      const latitude = data?.coordinates?.latitude || "";
+      const longitude = data?.coordinates?.longitude || "";
+
+      if (!latitude || !longitude) {
+        alert("No coordinates found.");
+        return;
+      }
+
+      setCoordinateCache((prev) => ({
+        ...prev,
+        [item.landId]: { latitude, longitude }
+      }));
+
+      window.open(
+        `https://www.google.com/maps?q=${latitude},${longitude}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    } catch (error) {
+      console.error("Map error:", error);
+      alert(error?.message || "Failed to load map.");
+    } finally {
+      setLoadingMapLandId("");
+    }
+  };
 
   const handleSelect = (item) => {
     setSelectedLandId(item.landId);
-
     if (onSelectLandId) {
       onSelectLandId(item.landId);
     }
@@ -291,18 +349,14 @@ export default function MyPropertiesTable({
                     </td>
 
                     <td>
-                      {item.latitude && item.longitude ? (
-                        <a
-                          href={`https://www.google.com/maps?q=${item.latitude},${item.longitude}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="table-link-btn"
-                        >
-                          📍 View
-                        </a>
-                      ) : (
-                        "-"
-                      )}
+                      <button
+                        type="button"
+                        className="table-link-btn"
+                        onClick={() => handleViewMap(item)}
+                        disabled={loadingMapLandId === item.landId}
+                      >
+                        {loadingMapLandId === item.landId ? "Loading..." : "📍 View"}
+                      </button>
                     </td>
 
                     <td>

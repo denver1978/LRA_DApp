@@ -43,7 +43,7 @@ export default function RegisterLandForm({
     setMetadataCID("");
   };
 
-  const fetchMetadataAndAutofill = async (cid) => {
+  const fetchMetadataAndAutofill = async (cid, showErrorToast = false) => {
     try {
       if (!cid) return;
 
@@ -77,24 +77,28 @@ export default function RegisterLandForm({
     } catch (error) {
       console.error("Metadata autofill error:", error);
       setMetadataCID(cid);
-      toast.error(error.message || "Failed to auto-fill from metadata.");
+      if (showErrorToast) {
+        toast.error(error.message || "Failed to auto-fill from metadata.");
+      }
     } finally {
       setLoadingMetadata(false);
     }
   };
 
-  // ✅ Only auto-fill from latestCID when there is NO selected pending registration
+  // Only auto-fill from latestCID if no selected pending registration
+  // and only if the form does not already have a CID.
   useEffect(() => {
-    if (latestCID && !selectedPendingRegistration) {
-      fetchMetadataAndAutofill(latestCID);
-    }
-  }, [latestCID, selectedPendingRegistration]);
+    if (!latestCID) return;
+    if (selectedPendingRegistration) return;
+    if (metadataCID) return;
+
+    fetchMetadataAndAutofill(latestCID, false);
+  }, [latestCID, selectedPendingRegistration, metadataCID]);
 
   useEffect(() => {
     clearForm();
   }, [resetKey]);
 
-  // ✅ Selected pending registration is the priority source
   useEffect(() => {
     if (!selectedPendingRegistration) return;
 
@@ -112,9 +116,9 @@ export default function RegisterLandForm({
       setOtherLocation(selectedPendingRegistration.location || "");
     }
 
-    // Optional safety: if metadata exists, refresh values from metadata too
+    // Only fetch metadata if there is a CID and we want a quiet refresh
     if (selectedPendingRegistration.metadataCID) {
-      fetchMetadataAndAutofill(selectedPendingRegistration.metadataCID);
+      fetchMetadataAndAutofill(selectedPendingRegistration.metadataCID, false);
     }
   }, [selectedPendingRegistration]);
 
@@ -134,13 +138,11 @@ export default function RegisterLandForm({
         return;
       }
 
-      // ✅ Proper address validation
       if (!ownerAddress || !ethers.isAddress(ownerAddress.trim())) {
         toast.error("Owner Address must be a valid Ethereum address.");
         return;
       }
 
-      // ✅ Reject zero address
       if (ownerAddress.trim().toLowerCase() === ZERO_ADDRESS.toLowerCase()) {
         toast.error("Owner Address cannot be the zero address.");
         return;

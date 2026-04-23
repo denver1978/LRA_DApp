@@ -2,40 +2,94 @@ import { useEffect, useState } from "react";
 import CopyButton from "./CopyButton";
 import ExplorerLink from "./ExplorerLink";
 
-export default function PendingPreRegistrations({ onSelectPending, refreshKey, onAfterSelect }) {
+export default function PendingPreRegistrations({
+  onSelectPending,
+  refreshKey,
+  onAfterSelect
+}) {
   const [items, setItems] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
 
   const loadPendingItems = () => {
-    const saved = JSON.parse(localStorage.getItem("pendingPreRegistrations") || "[]");
-    const pendingOnly = saved.filter((item) => item.status === "pending");
-    setAllItems(saved);
-    setItems(pendingOnly);
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("pendingPreRegistrations") || "[]"
+      );
+
+      const pendingOnly = saved.filter((item) => item.status === "pending");
+
+      setAllItems(saved);
+      setItems(pendingOnly);
+    } catch (error) {
+      console.error("Failed to load pending pre-registrations:", error);
+      setAllItems([]);
+      setItems([]);
+    }
   };
 
   useEffect(() => {
     loadPendingItems();
   }, [refreshKey]);
 
+  // ✅ Listen for localStorage changes from other tabs/windows
+  useEffect(() => {
+    const handleStorage = (event) => {
+      if (event.key === "pendingPreRegistrations") {
+        loadPendingItems();
+      }
+    };
+
+    // ✅ Listen for same-tab custom refresh events
+    const handlePendingRefresh = () => {
+      loadPendingItems();
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("pendingPreRegistrationsUpdated", handlePendingRefresh);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("pendingPreRegistrationsUpdated", handlePendingRefresh);
+    };
+  }, []);
+
   const handleSelect = (item) => {
-    setSelectedId(item.localId); // 🔥 track selected row
+    setSelectedId(item.localId);
 
     if (onSelectPending) {
       onSelectPending(item);
     }
 
     if (onAfterSelect) {
-    onAfterSelect();
+      onAfterSelect();
     }
-
   };
 
   const handleRemove = (localId) => {
-    const saved = JSON.parse(localStorage.getItem("pendingPreRegistrations") || "[]");
-    const updated = saved.filter((item) => item.localId !== localId);
-    localStorage.setItem("pendingPreRegistrations", JSON.stringify(updated));
-    loadPendingItems();
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("pendingPreRegistrations") || "[]"
+      );
+
+      const updated = saved.filter((item) => item.localId !== localId);
+
+      localStorage.setItem(
+        "pendingPreRegistrations",
+        JSON.stringify(updated)
+      );
+
+      // ✅ Same-tab instant update
+      window.dispatchEvent(new Event("pendingPreRegistrationsUpdated"));
+
+      loadPendingItems();
+
+      if (selectedId === localId) {
+        setSelectedId(null);
+      }
+    } catch (error) {
+      console.error("Failed to remove pending pre-registration:", error);
+    }
   };
 
   const summary = {
@@ -94,7 +148,7 @@ export default function PendingPreRegistrations({ onSelectPending, refreshKey, o
 
           <tbody>
             {items.map((item) => (
-              <tr 
+              <tr
                 key={item.localId}
                 className={selectedId === item.localId ? "selected-row" : ""}
               >

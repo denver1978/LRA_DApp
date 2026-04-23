@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import CopyButton from "./CopyButton";
 import ExplorerLink from "./ExplorerLink";
@@ -19,7 +19,6 @@ export default function MultiFileUploadToIPFS({
   const [otherLocation, setOtherLocation] = useState("");
   const [propertyType, setPropertyType] = useState("");
 
-  // ✅ NEW: geographic coordinates
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
 
@@ -29,6 +28,8 @@ export default function MultiFileUploadToIPFS({
 
   const [loading, setLoading] = useState(false);
   const [loadingLand, setLoadingLand] = useState(false);
+
+  const fileInputRef = useRef(null);
 
   const activeLandId = selectedLandId || landId;
 
@@ -56,6 +57,28 @@ export default function MultiFileUploadToIPFS({
     setFiles([]);
     setUploadedFiles([]);
     setMetadataCID("");
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const clearInputsAfterUpload = () => {
+    setLandId(selectedLandId || "");
+    setLandExists(false);
+    setLandInfo(null);
+    setOwnerAddress("");
+    setTctNumber("");
+    setLocation("");
+    setOtherLocation("");
+    setPropertyType("");
+    setLatitude("");
+    setLongitude("");
+    setFiles([]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   useEffect(() => {
@@ -112,8 +135,6 @@ export default function MultiFileUploadToIPFS({
         setOtherLocation(info.location || "");
       }
 
-      // Coordinates are stored in metadata, not directly on-chain,
-      // so we do not auto-load them here from contract.
       setLatitude("");
       setLongitude("");
 
@@ -220,7 +241,6 @@ export default function MultiFileUploadToIPFS({
         return;
       }
 
-      // ✅ NEW: validate coordinates
       if (!latitude.trim()) {
         toast.error("Please enter Latitude.");
         return;
@@ -244,7 +264,6 @@ export default function MultiFileUploadToIPFS({
 
       setUploadedFiles(fileResults);
 
-      // ✅ Coordinates saved into metadata JSON
       const metadata = {
         registrationMode: landExists ? "existing-land-reference" : "pre-registration",
         landReference: {
@@ -295,6 +314,10 @@ export default function MultiFileUploadToIPFS({
       );
 
       toast.success("Files uploaded successfully. Metadata CID is ready for Register Land.");
+
+      // Clear only the inputs for next upload,
+      // keep uploadedFiles + metadataCID visible as proof of success
+      clearInputsAfterUpload();
     } catch (error) {
       console.error("Multi-file IPFS upload error:", error);
       toast.error(error?.message || "Failed to upload files.");
@@ -409,7 +432,6 @@ export default function MultiFileUploadToIPFS({
           </select>
         </div>
 
-        {/* ✅ NEW: Latitude */}
         <div className="form-row">
           <label className="form-label">Latitude</label>
           <input
@@ -420,7 +442,6 @@ export default function MultiFileUploadToIPFS({
           />
         </div>
 
-        {/* ✅ NEW: Longitude */}
         <div className="form-row">
           <label className="form-label">Longitude</label>
           <input
@@ -434,6 +455,7 @@ export default function MultiFileUploadToIPFS({
         <div className="form-row">
           <label className="form-label">Select Files</label>
           <input
+            ref={fileInputRef}
             type="file"
             multiple
             onChange={(e) => setFiles(Array.from(e.target.files))}
