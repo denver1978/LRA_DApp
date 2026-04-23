@@ -413,6 +413,8 @@ export default function RDPropertyTransferListing({
   onSelectLandId,
   maxLandId = 50
 }) {
+  const REFRESH_INTERVAL = 300; // 5 minutes
+
   const [items, setItems] = useState([]);
   const [selectedLandId, setSelectedLandId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -423,6 +425,9 @@ export default function RDPropertyTransferListing({
 
   const [coordinateCache, setCoordinateCache] = useState({});
   const [loadingMapLandId, setLoadingMapLandId] = useState("");
+
+  const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   const itemsPerPage = 5;
   const loadingRef = useRef(false);
@@ -508,76 +513,38 @@ export default function RDPropertyTransferListing({
     }
   }, [contract, refreshKey, maxLandId]);
 
-  // ✅ Instant refresh from YOUR EXISTING contract events + fallback block listener
+  // ✅ 5-minute auto refresh timer
   useEffect(() => {
-    if (!contract) return;
+    if (!contract || !autoRefresh) return;
 
-    let timeoutId = null;
-
-    const safeReload = () => {
-      if (loadingRef.current) return;
-
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        loadTransferListing();
-      }, 200);
-    };
-
-    // ✅ These are your ACTUAL deployed contract event names
-    const events = [
-      "SaleRequested",
-      "BuyerFunded",
-      "SurveySet",
-      "BIRSet",
-      "TreasurySet",
-      "AssessorSet",
-      "OwnershipTransferred",
-      "SaleCancelled",
-      "LandRegistered",
-      "LandUpdated",
-      "SuccessionResolved",
-      "OwnerMarkedDeceased",
-      "AuthoritiesSet"
-    ];
-
-    events.forEach((eventName) => {
-      try {
-        contract.on(eventName, safeReload);
-      } catch (error) {
-        console.warn(`Event ${eventName} not found in ABI`);
-      }
-    });
-
-    // Fallback block listener for safety
-    const provider = contract?.runner?.provider;
-
-    const handleBlock = () => {
-      if (loadingRef.current) return;
-
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        loadTransferListing();
-      }, 500);
-    };
-
-    if (provider && typeof provider.on === "function") {
-      provider.on("block", handleBlock);
-    }
-
-    return () => {
-      clearTimeout(timeoutId);
-
-      events.forEach((eventName) => {
-        try {
-          contract.off(eventName, safeReload);
-        } catch {}
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          loadTransferListing();
+          return REFRESH_INTERVAL;
+        }
+        return prev - 1;
       });
+    }, 1000);
 
-      if (provider && typeof provider.off === "function") {
-        provider.off("block", handleBlock);
-      }
-    };
-  }, [contract, maxLandId]);
+    return () => clearInterval(interval);
+  }, [contract, autoRefresh, maxLandId]);
+
+  // ✅ Reset countdown when toggling auto refresh
+  useEffect(() => {
+    if (autoRefresh) {
+      setCountdown(REFRESH_INTERVAL);
+    }
+  }, [autoRefresh]);
+
+  const handleManualRefresh = async () => {
+    await loadTransferListing();
+    setCountdown(REFRESH_INTERVAL);
+  };
+
+  const handleToggleAutoRefresh = () => {
+    setAutoRefresh((prev) => !prev);
+  };
 
   const handleSelect = (item) => {
     setSelectedLandId(item.landId);
@@ -713,6 +680,59 @@ export default function RDPropertyTransferListing({
         <div className="summary-mini-card">
           <span className="summary-mini-label">No Active Sale</span>
           <strong>{summary.noSale}</strong>
+        </div>
+      </div>
+
+      {/* ✅ Refresh Controls */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "12px",
+          flexWrap: "wrap",
+          marginTop: "12px",
+          marginBottom: "12px"
+        }}
+      >
+        <div style={{ fontSize: "14px", color: "#555" }}>
+          {autoRefresh ? (
+            <>
+              Auto refresh in:{" "}
+              <strong>
+                {Math.floor(countdown / 60)}m {countdown % 60}s
+              </strong>
+            </>
+          ) : (
+            <strong>Auto refresh is OFF</strong>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "14px",
+              fontWeight: "600"
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={handleToggleAutoRefresh}
+            />
+            Live / Auto Refresh
+          </label>
+
+          <button
+            type="button"
+            onClick={handleManualRefresh}
+            className="secondary-btn"
+          >
+            🔄 Refresh Now
+          </button>
         </div>
       </div>
 
