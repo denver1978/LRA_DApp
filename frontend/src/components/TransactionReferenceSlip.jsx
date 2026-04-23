@@ -82,6 +82,7 @@ export default function TransactionReferenceSlip({ contract, selectedLandId = ""
 
       const metadata = await loadMetadataFromIPFS(land.metadataCID);
       const previewImage = getPreviewImage(metadata);
+
       const metadataUrl = land.metadataCID
         ? `https://gateway.pinata.cloud/ipfs/${land.metadataCID}`
         : "";
@@ -127,7 +128,6 @@ export default function TransactionReferenceSlip({ contract, selectedLandId = ""
       toast.error("Load the reference slip first");
       return;
     }
-
     window.print();
   };
 
@@ -168,25 +168,40 @@ export default function TransactionReferenceSlip({ contract, selectedLandId = ""
 
       {reference && (
         <div className="reference-slip" style={{ marginTop: "20px" }}>
+
+          {/* HEADER */}
           <div className="reference-slip-header">
             <div>
               <h3>Baguio Land Registry Transaction Reference</h3>
               <p><strong>Date Generated:</strong> {reference.generatedAt}</p>
             </div>
 
-            {reference.metadataUrl && (
-              <div className="reference-qr-wrap">
-                <QRCodeCanvas
-                  value={reference.metadataUrl}
-                  size={110}
-                  level="M"
-                  includeMargin={true}
-                />
-                <p className="reference-qr-caption">Scan for Metadata CID</p>
-              </div>
-            )}
+            {/* ✅ FIXED QR CODE (ALWAYS SHOWS) */}
+            <div className="reference-qr-wrap">
+              <QRCodeCanvas
+                value={
+                  reference.metadataUrl ||
+                  JSON.stringify({
+                    landId: reference.landId,
+                    metadataCID: reference.metadataCID,
+                    owner: reference.owner,
+                    buyer: reference.buyer,
+                    generatedAt: reference.generatedAt
+                  })
+                }
+                size={110}
+                level="M"
+                includeMargin={true}
+              />
+              <p className="reference-qr-caption">
+                {reference.metadataUrl
+                  ? "Scan for Metadata CID"
+                  : "Scan for Transaction Reference"}
+              </p>
+            </div>
           </div>
 
+          {/* IMAGE */}
           {reference.previewImage && (
             <div className="reference-image-wrap">
               <img
@@ -198,6 +213,7 @@ export default function TransactionReferenceSlip({ contract, selectedLandId = ""
             </div>
           )}
 
+          {/* DETAILS */}
           <div className="reference-grid">
             <div>
               <h4>Property Details</h4>
