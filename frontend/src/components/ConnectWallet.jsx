@@ -18,6 +18,7 @@ export default function ConnectWallet({ account, connectWallet }) {
 */}
 
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export default function ConnectWallet({
   account,
@@ -41,12 +42,13 @@ export default function ConnectWallet({
     try {
       await navigator.clipboard.writeText(account);
       setCopied(true);
+      toast.success("Wallet address copied");
 
       setTimeout(() => {
         setCopied(false);
       }, 1500);
     } catch (error) {
-      alert("Unable to copy wallet address.");
+      toast.error("Unable to copy wallet address");
     }
   };
 
@@ -67,7 +69,7 @@ export default function ConnectWallet({
             fontWeight: "bold"
           }}
         >
-          Connect MetaMask
+          🦊 Connect MetaMask
         </button>
       )}
 
@@ -80,15 +82,17 @@ export default function ConnectWallet({
             flexWrap: "wrap",
             padding: "8px 10px",
             border: "1px solid #ddd",
-            borderRadius: "8px",
+            borderRadius: "10px",
             background: "#f9fafb"
           }}
         >
+          <span style={{ fontSize: "14px" }}>🦊</span>
+
           <span style={{ fontSize: "13px", fontWeight: "600" }}>
             Wallet:
           </span>
 
-          <span style={{ fontSize: "13px" }}>
+          <span style={{ fontSize: "13px", fontFamily: "monospace" }}>
             {shortAddress}
           </span>
 
@@ -109,13 +113,19 @@ export default function ConnectWallet({
 
           <button
             onClick={copyAddress}
+            title="Copy Address"
             style={{
-              padding: "5px 9px",
+              padding: "6px 10px",
               fontSize: "12px",
               border: "1px solid #ccc",
-              borderRadius: "4px",
+              borderRadius: "5px",
               cursor: "pointer",
-              background: "white"
+              background: "#f3f4f6",
+              color: "#111",              // ✅ force visible text
+              fontWeight: "600",          // ✅ clearer text
+              display: "flex",
+              alignItems: "center",
+              gap: "4px"
             }}
           >
             {copied ? "Copied" : "Copy"}
@@ -129,7 +139,7 @@ export default function ConnectWallet({
               backgroundColor: "#dc2626",
               color: "white",
               border: "none",
-              borderRadius: "4px",
+              borderRadius: "5px",
               cursor: "pointer"
             }}
           >
