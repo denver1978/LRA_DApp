@@ -58,11 +58,12 @@ export default function BuyerPage({
           mode="buyer"
         />
 
+        //--- this LandIdSelector should be disable
         {/* <LandIdSelector
           landId={selectedLandId}
           setLandId={setSelectedLandId}
           label="Active Buyer Land ID"
-        /> */}
+        /> 
 
         <CollapsibleSection title="Land / Sale Quick Stats">
           <QuickStatsCards
@@ -90,13 +91,15 @@ export default function BuyerPage({
           />
         </CollapsibleSection>
 
+
+        // ----- this also need to be diable
         {/* <CollapsibleSection title="Land Coordinates">
           <LandCoordinatesViewer
             contract={contract}
             selectedLandId={selectedLandId}
             refreshKey={refreshKey}
           />
-        </CollapsibleSection> */}
+        </CollapsibleSection> 
 
         <CollapsibleSection title="Transaction Progress Tracker">
           <TransactionProgressTracker

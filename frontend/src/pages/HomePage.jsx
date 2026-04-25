@@ -1,4 +1,4 @@
-{/*}
+{/*
 import useDashboardAccess from "../hooks/useDashboardAccess";
 import { Link } from "react-router-dom";
 import QuickDemoStart from "../components/QuickDemoStart";
@@ -85,7 +85,7 @@ export default function HomePage({ account, connectWallet, disconnectWallet, con
 
       <div className="page-container">
 
-        {/* ✅ MOBILE NOTICE FIX */}
+        //-- ✅ MOBILE NOTICE FIX 
         {isMobile && <MobileNotice />}
 
         <div className="home-wallet-status">
@@ -230,6 +230,9 @@ export default function HomePage({ account, connectWallet, disconnectWallet, con
   );
 }
 */}
+
+
+//------ Final version ---
 
 import useDashboardAccess from "../hooks/useDashboardAccess";
 import { Link } from "react-router-dom";
