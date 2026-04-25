@@ -145,6 +145,7 @@ import PageHeaderPanel from "../components/PageHeaderPanel";
 import RequestSellForm from "../components/RequestSellForm";
 import MyPropertiesTable from "../components/MyPropertiesTable";
 import MultiFileUploadToIPFS from "../components/MultiFileUploadToIPFS";
+import AutoRefreshPanel from "../components/AutoRefreshPanel";
 
 export default function SellerPage({
   account,
@@ -206,6 +207,8 @@ export default function SellerPage({
           />
 
           <CollapsibleSection title="My Properties" defaultOpen={true}>
+            <AutoRefreshPanel triggerRefresh={triggerRefresh} />
+            
             <MyPropertiesTable
               contract={contract}
               account={account}

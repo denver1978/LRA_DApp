@@ -170,6 +170,7 @@ import TransactionReferenceSlip from "../components/TransactionReferenceSlip";
 import MyPropertiesTable from "../components/MyPropertiesTable";
 import TransactionRoleGuard from "../components/TransactionRoleGuard";
 import TransferCertificateViewer from "../components/TransferCertificateViewer";
+import AutoRefreshPanel from "../components/AutoRefreshPanel";
 
 export default function BuyerPage({
   account,
@@ -228,6 +229,8 @@ export default function BuyerPage({
         </CollapsibleSection>
 
         <CollapsibleSection title="My Purchased Properties" defaultOpen={true}>
+          <AutoRefreshPanel triggerRefresh={triggerRefresh} />
+          
           <MyPropertiesTable
             contract={contract}
             account={account}

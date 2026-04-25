@@ -10,6 +10,20 @@ export default function ActivityLog({ contract, refreshKey, selectedLandId = "" 
 
   const activeLandId = selectedLandId || landId;
 
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return "Not available";
+
+    return new Date(Number(timestamp) * 1000).toLocaleString("en-PH", {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true
+    });
+  };
+
   const loadActivityLog = async () => {
     try {
       if (!contract) {
@@ -46,16 +60,38 @@ export default function ActivityLog({ contract, refreshKey, selectedLandId = "" 
         const filter = config.getFilter();
         const events = await contract.queryFilter(filter, 0, "latest");
 
-        const mapped = events.map((event) => ({
-          type: config.label,
-          txHash: event.transactionHash,
-          blockNumber: event.blockNumber
-        }));
+        const mapped = await Promise.all(
+          events.map(async (event) => {
+            let blockTimestamp = null;
+
+            try {
+              const block = await event.getBlock();
+              blockTimestamp = block?.timestamp || null;
+            } catch (blockError) {
+              console.error("Block timestamp error:", blockError);
+            }
+
+            return {
+              type: config.label,
+              txHash: event.transactionHash,
+              blockNumber: event.blockNumber,
+              timestamp: blockTimestamp,
+              dateTime: formatDateTime(blockTimestamp)
+            };
+          })
+        );
 
         allEvents = [...allEvents, ...mapped];
       }
 
-      allEvents.sort((a, b) => a.blockNumber - b.blockNumber);
+      allEvents.sort((a, b) => {
+        if (a.blockNumber !== b.blockNumber) {
+          return a.blockNumber - b.blockNumber;
+        }
+
+        return a.type.localeCompare(b.type);
+      });
+
       setActivities(allEvents);
     } catch (error) {
       console.error("Activity log error:", error);
@@ -76,7 +112,10 @@ export default function ActivityLog({ contract, refreshKey, selectedLandId = "" 
   return (
     <div className="card">
       <h2 className="section-title">Blockchain Activity Log</h2>
-      <p className="section-note">View the on-chain event history for the selected land record.</p>
+      <p className="section-note">
+        View the on-chain event history, block number, transaction hash, and blockchain timestamp
+        for the selected land record.
+      </p>
 
       {!selectedLandId && (
         <>
@@ -108,7 +147,7 @@ export default function ActivityLog({ contract, refreshKey, selectedLandId = "" 
         <div style={{ marginTop: "20px" }}>
           {activities.map((activity, index) => (
             <div
-              key={index}
+              key={`${activity.txHash}-${activity.type}-${index}`}
               style={{
                 padding: "14px",
                 border: "1px solid #dbe4ee",
@@ -118,6 +157,7 @@ export default function ActivityLog({ contract, refreshKey, selectedLandId = "" 
               }}
             >
               <p><strong>Event:</strong> {activity.type}</p>
+              <p><strong>Date/Time:</strong> {activity.dateTime}</p>
               <p><strong>Block:</strong> {activity.blockNumber}</p>
               <p>
                 <strong>Tx Hash:</strong> {activity.txHash}
