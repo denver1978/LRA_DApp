@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@metamask/connect-evm": "^0.10.0",
+    "@metamask/sdk": "^0.34.0",
     "@walletconnect/ethereum-provider": "^2.23.9",
     "ethers": "^6.16.0",
     "lucide-react": "^0.577.0",

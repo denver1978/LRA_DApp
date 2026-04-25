@@ -1,3 +1,5 @@
+{/*}
+
 export default function ConnectWallet({ account, connectWallet }) {
   return (
     <div style={{ marginBottom: "20px" }}>
@@ -13,73 +15,49 @@ export default function ConnectWallet({ account, connectWallet }) {
     </div>
   );
 }
+*/}
 
+import { useEffect, useState } from "react";
 
+export default function ConnectWallet({ account, connectWallet, disconnectWallet }) {
+  const [isMobile, setIsMobile] = useState(false);
 
-{/*
-import { useState } from "react";
-import { BrowserProvider } from "ethers";
+  useEffect(() => {
+    const mobileCheck = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    setIsMobile(mobileCheck);
+  }, []);
 
-const SEPOLIA_CHAIN_ID = "0xaa36a7";
+  return (
+    <div style={{ marginBottom: "20px" }}>
+      
+      {/* Mobile Notice */}
+      {isMobile && !account && (
+        <p style={{ color: "orange", marginBottom: "10px" }}>
+          Mobile detected: You may be redirected to MetaMask app.
+        </p>
+      )}
 
-export default function useWallet() {
-  const [account, setAccount] = useState("");
-  const [provider, setProvider] = useState(null);
-  const [signer, setSigner] = useState(null);
+      {/* Connect / Disconnect Button */}
+      <button
+        onClick={account ? disconnectWallet : connectWallet}
+        style={{
+          padding: "10px 15px",
+          cursor: "pointer",
+          fontWeight: "bold"
+        }}
+      >
+        {account
+          ? `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`
+          : "Connect MetaMask"}
+      </button>
 
-  const connectWallet = async () => {
-    try {
-      if (!window.ethereum) {
-        alert("MetaMask is not installed.");
-        return;
-      }
-
-      const browserProvider = new BrowserProvider(window.ethereum);
-
-      await browserProvider.send("eth_requestAccounts", []);
-
-      const currentChainId = await window.ethereum.request({
-        method: "eth_chainId"
-      });
-
-      if (currentChainId !== SEPOLIA_CHAIN_ID) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: SEPOLIA_CHAIN_ID }]
-          });
-        } catch (switchError) {
-          console.error("Sepolia switch error:", switchError);
-          alert("Please switch MetaMask to Sepolia test network first.");
-          return;
-        }
-      }
-
-      const signerInstance = await browserProvider.getSigner();
-      const address = await signerInstance.getAddress();
-
-      setProvider(browserProvider);
-      setSigner(signerInstance);
-      setAccount(address);
-    } catch (error) {
-      console.error("Wallet connection error:", error);
-      alert("Failed to connect wallet.");
-    }
-  };
-
-  const disconnectWallet = () => {
-    setAccount("");
-    setProvider(null);
-    setSigner(null);
-  };
-
-  return {
-    account,
-    provider,
-    signer,
-    connectWallet,
-    disconnectWallet
-  };
+      {/* Full Address Display */}
+      {account && (
+        <p style={{ marginTop: "10px", wordBreak: "break-all" }}>
+          Connected Account: {account}
+        </p>
+      )}
+    </div>
+  );
 }
 
-*/}
