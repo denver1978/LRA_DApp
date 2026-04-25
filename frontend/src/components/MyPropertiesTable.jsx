@@ -106,30 +106,6 @@ export default function MyPropertiesTable({
     loadProperties();
   }, [contract, account, refreshKey, role, maxLandId]);
 
-  // ✅ Real-time refresh on every mined block
-  useEffect(() => {
-    const provider = contract?.runner?.provider;
-    if (!provider || typeof provider.on !== "function") return;
-
-    let timeoutId = null;
-
-    const handleBlock = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        loadProperties();
-      }, 300);
-    };
-
-    provider.on("block", handleBlock);
-
-    return () => {
-      clearTimeout(timeoutId);
-      if (typeof provider.off === "function") {
-        provider.off("block", handleBlock);
-      }
-    };
-  }, [contract, account, role, maxLandId]);
-
   const handleViewMap = async (item) => {
     try {
       if (!item.metadataCID) {
