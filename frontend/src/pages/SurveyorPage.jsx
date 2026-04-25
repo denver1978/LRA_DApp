@@ -132,6 +132,7 @@ export default function SurveyorPage({
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ConnectWallet from "../components/ConnectWallet";
+import DashboardRoleGate from "../components/DashboardRoleGate";
 import ViewSale from "../components/ViewSale";
 import QuickStatsCards from "../components/QuickStatsCards";
 import TransactionProgressTracker from "../components/TransactionProgressTracker";
@@ -185,76 +186,83 @@ export default function SurveyorPage({
           useRoleGuard={true}
         />
 
-        <LandIdSelector
-          landId={selectedLandId}
-          setLandId={setSelectedLandId}
-          label="Active Surveyor Land ID"
-        />
-
-        <CollapsibleSection title="View Sale" defaultOpen={true}>
-          <ViewSale
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
+        <DashboardRoleGate
+          contract={contract}
+          account={account}
+          expectedRole="surveyor"
+          expectedRoleLabel="Surveyor"
+        >
+          <LandIdSelector
+            landId={selectedLandId}
+            setLandId={setSelectedLandId}
+            label="Active Surveyor Land ID"
           />
-        </CollapsibleSection>
 
-        <CollapsibleSection title="Land Coordinates" defaultOpen={true}>
-          <LandCoordinatesViewer
-            contract={contract}
-            selectedLandId={selectedLandId}
-            refreshKey={refreshKey}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="View Sale" defaultOpen={true}>
+            <ViewSale
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Land / Sale Quick Stats">
-          <QuickStatsCards
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Land Coordinates" defaultOpen={true}>
+            <LandCoordinatesViewer
+              contract={contract}
+              selectedLandId={selectedLandId}
+              refreshKey={refreshKey}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Transaction Progress Tracker">
-          <TransactionProgressTracker
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Land / Sale Quick Stats">
+            <QuickStatsCards
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Blockchain Activity Log">
-          <ActivityLog
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Transaction Progress Tracker">
+            <TransactionProgressTracker
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Pending Survey Approvals" defaultOpen={true}>
-          <PendingApprovalsTable
-            contract={contract}
-            role="surveyor"
-            refreshKey={refreshKey}
-            onSelectLandId={setSelectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Blockchain Activity Log">
+            <ActivityLog
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Uploaded Documents" defaultOpen={true}>
-          <UploadedDocumentsViewer
-            contract={contract}
-            selectedLandId={selectedLandId}
-            refreshKey={refreshKey}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Pending Survey Approvals" defaultOpen={true}>
+            <PendingApprovalsTable
+              contract={contract}
+              role="surveyor"
+              refreshKey={refreshKey}
+              onSelectLandId={setSelectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Survey Approval" defaultOpen={true}>
-          <SurveyApprovalForm
-            contract={contract}
-            triggerRefresh={triggerRefresh}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Uploaded Documents" defaultOpen={true}>
+            <UploadedDocumentsViewer
+              contract={contract}
+              selectedLandId={selectedLandId}
+              refreshKey={refreshKey}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Survey Approval" defaultOpen={true}>
+            <SurveyApprovalForm
+              contract={contract}
+              triggerRefresh={triggerRefresh}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
+        </DashboardRoleGate>
       </div>
     </>
   );

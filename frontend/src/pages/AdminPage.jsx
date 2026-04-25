@@ -38,11 +38,17 @@ export default function AdminPage({ account, connectWallet, contract }) {
 
 import { Link } from "react-router-dom";
 import ConnectWallet from "../components/ConnectWallet";
+import DashboardRoleGate from "../components/DashboardRoleGate";
 import WalletRoleStatus from "../components/WalletRoleStatus";
 import ViewAuthorities from "../components/ViewAuthorities";
 import SetAuthoritiesForm from "../components/SetAuthoritiesForm";
 
-export default function AdminPage({ account, connectWallet, disconnectWallet, contract }) {
+export default function AdminPage({
+  account,
+  connectWallet,
+  disconnectWallet,
+  contract
+}) {
   return (
     <>
       <div className="top-nav">
@@ -65,9 +71,16 @@ export default function AdminPage({ account, connectWallet, disconnectWallet, co
           Manage role assignments and review the currently configured authorities.
         </p>
 
-        <WalletRoleStatus contract={contract} account={account} />
-        <ViewAuthorities contract={contract} />
-        <SetAuthoritiesForm contract={contract} />
+        <DashboardRoleGate
+          contract={contract}
+          account={account}
+          expectedRole="admin"
+          expectedRoleLabel="Owner / Admin"
+        >
+          <WalletRoleStatus contract={contract} account={account} />
+          <ViewAuthorities contract={contract} />
+          <SetAuthoritiesForm contract={contract} />
+        </DashboardRoleGate>
       </div>
     </>
   );

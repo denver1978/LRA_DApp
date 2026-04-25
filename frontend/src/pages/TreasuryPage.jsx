@@ -122,6 +122,7 @@ export default function TreasuryPage({
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ConnectWallet from "../components/ConnectWallet";
+import DashboardRoleGate from "../components/DashboardRoleGate";
 import ViewSale from "../components/ViewSale";
 import QuickStatsCards from "../components/QuickStatsCards";
 import TransactionProgressTracker from "../components/TransactionProgressTracker";
@@ -174,68 +175,75 @@ export default function TreasuryPage({
           useRoleGuard={true}
         />
 
-        <LandIdSelector
-          landId={selectedLandId}
-          setLandId={setSelectedLandId}
-          label="Active Treasury Land ID"
-        />
-
-        <CollapsibleSection title="View Sale" defaultOpen={true}>
-          <ViewSale
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
+        <DashboardRoleGate
+          contract={contract}
+          account={account}
+          expectedRole="treasury"
+          expectedRoleLabel="City Treasury"
+        >
+          <LandIdSelector
+            landId={selectedLandId}
+            setLandId={setSelectedLandId}
+            label="Active Treasury Land ID"
           />
-        </CollapsibleSection>
 
-        <CollapsibleSection title="Land / Sale Quick Stats">
-          <QuickStatsCards
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="View Sale" defaultOpen={true}>
+            <ViewSale
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Transaction Progress Tracker">
-          <TransactionProgressTracker
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Land / Sale Quick Stats">
+            <QuickStatsCards
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Blockchain Activity Log">
-          <ActivityLog
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Transaction Progress Tracker">
+            <TransactionProgressTracker
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Pending City Treasury Approvals" defaultOpen={true}>
-          <PendingApprovalsTable
-            contract={contract}
-            role="treasury"
-            refreshKey={refreshKey}
-            onSelectLandId={setSelectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Blockchain Activity Log">
+            <ActivityLog
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Uploaded Documents" defaultOpen={true}>
-          <UploadedDocumentsViewer
-            contract={contract}
-            selectedLandId={selectedLandId}
-            refreshKey={refreshKey}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Pending City Treasury Approvals" defaultOpen={true}>
+            <PendingApprovalsTable
+              contract={contract}
+              role="treasury"
+              refreshKey={refreshKey}
+              onSelectLandId={setSelectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Treasury Approval" defaultOpen={true}>
-          <TreasuryApprovalForm
-            contract={contract}
-            triggerRefresh={triggerRefresh}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Uploaded Documents" defaultOpen={true}>
+            <UploadedDocumentsViewer
+              contract={contract}
+              selectedLandId={selectedLandId}
+              refreshKey={refreshKey}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Treasury Approval" defaultOpen={true}>
+            <TreasuryApprovalForm
+              contract={contract}
+              triggerRefresh={triggerRefresh}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
+        </DashboardRoleGate>
       </div>
     </>
   );

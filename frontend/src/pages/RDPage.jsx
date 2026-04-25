@@ -234,6 +234,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import PageHeaderPanel from "../components/PageHeaderPanel";
 import ConnectWallet from "../components/ConnectWallet";
+import DashboardRoleGate from "../components/DashboardRoleGate";
 import RegisterLandForm from "../components/RegisterLandForm";
 import ViewLand from "../components/ViewLand";
 import QuickStatsCards from "../components/QuickStatsCards";
@@ -316,153 +317,160 @@ export default function RDPage({
           useRoleGuard={true}
         />
 
-        <LandIdSelector
-          landId={selectedLandId}
-          setLandId={setSelectedLandId}
-          label="Active RD Land ID"
-        />
-
-        <CollapsibleSection title="Upload Documents to IPFS" defaultOpen={true}>
-          <MultiFileUploadToIPFS
-            setLatestCID={setLatestCID}
-            contract={contract}
-            selectedLandId={selectedLandId}
-            resetKey={registrationResetKey}
+        <DashboardRoleGate
+          contract={contract}
+          account={account}
+          expectedRole="rd"
+          expectedRoleLabel="Registry of Deeds"
+        >
+          <LandIdSelector
+            landId={selectedLandId}
+            setLandId={setSelectedLandId}
+            label="Active RD Land ID"
           />
 
-          <div className="cid-box">
-            <strong>Latest Generated CID:</strong> {latestCID || "None yet"}
+          <CollapsibleSection title="Upload Documents to IPFS" defaultOpen={true}>
+            <MultiFileUploadToIPFS
+              setLatestCID={setLatestCID}
+              contract={contract}
+              selectedLandId={selectedLandId}
+              resetKey={registrationResetKey}
+            />
+
+            <div className="cid-box">
+              <strong>Latest Generated CID:</strong> {latestCID || "None yet"}
+            </div>
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Pending Pre-Registrations" defaultOpen={true}>
+            <PendingPreRegistrations
+              refreshKey={refreshKey}
+              onSelectPending={(item) => {
+                setSelectedPendingRegistration(item);
+                setSelectedLandId(item?.landId || "");
+              }}
+              onAfterSelect={scrollToRegisterLand}
+            />
+          </CollapsibleSection>
+
+          <div ref={registerLandRef}>
+            <CollapsibleSection title="Register Land" defaultOpen={true}>
+              <RegisterLandForm
+                contract={contract}
+                latestCID={latestCID}
+                triggerRefresh={triggerRefresh}
+                resetKey={registrationResetKey}
+                onSuccessfulRegister={triggerRegistrationReset}
+                onRegisteredSuccess={setLastRegistered}
+                selectedPendingRegistration={selectedPendingRegistration}
+              />
+            </CollapsibleSection>
           </div>
-        </CollapsibleSection>
 
-        <CollapsibleSection title="Pending Pre-Registrations" defaultOpen={true}>
-          <PendingPreRegistrations
-            refreshKey={refreshKey}
-            onSelectPending={(item) => {
-              setSelectedPendingRegistration(item);
-              setSelectedLandId(item?.landId || "");
-            }}
-            onAfterSelect={scrollToRegisterLand}
-          />
-        </CollapsibleSection>
+          <LastRegisteredPanel lastRegistered={lastRegistered} />
 
-        <div ref={registerLandRef}>
-          <CollapsibleSection title="Register Land" defaultOpen={true}>
-            <RegisterLandForm
+          <CollapsibleSection title="View Land">
+            <ViewLand
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Land / Sale Quick Stats">
+            <QuickStatsCards
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Transaction Progress Tracker">
+            <TransactionProgressTracker
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Blockchain Activity Log">
+            <ActivityLog
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Property Transfer Listing" defaultOpen={true}>
+            <RDPropertyTransferListing
+              contract={contract}
+              refreshKey={refreshKey}
+              onSelectLandId={setSelectedLandId}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Pending RD Final Approvals" defaultOpen={true}>
+            <PendingApprovalsTable
+              contract={contract}
+              role="rd"
+              refreshKey={refreshKey}
+              onSelectLandId={setSelectedLandId}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Uploaded Documents" defaultOpen={true}>
+            <UploadedDocumentsViewer
+              contract={contract}
+              selectedLandId={selectedLandId}
+              refreshKey={refreshKey}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="RD Final Approval">
+            <RDFinalApprovalForm
               contract={contract}
               latestCID={latestCID}
               triggerRefresh={triggerRefresh}
-              resetKey={registrationResetKey}
-              onSuccessfulRegister={triggerRegistrationReset}
-              onRegisteredSuccess={setLastRegistered}
-              selectedPendingRegistration={selectedPendingRegistration}
+              selectedLandId={selectedLandId}
             />
           </CollapsibleSection>
-        </div>
 
-        <LastRegisteredPanel lastRegistered={lastRegistered} />
+          <CollapsibleSection title="Mark Owner Deceased">
+            <MarkOwnerDeceasedForm
+              contract={contract}
+              triggerRefresh={triggerRefresh}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="View Land">
-          <ViewLand
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Resolve Succession">
+            <ResolveSuccessionForm
+              contract={contract}
+              latestCID={latestCID}
+              triggerRefresh={triggerRefresh}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Land / Sale Quick Stats">
-          <QuickStatsCards
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Transaction Reference Slip">
+            <TransactionReferenceSlip
+              contract={contract}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Transaction Progress Tracker">
-          <TransactionProgressTracker
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Temporary Transfer Certificate">
+            <TransferCertificateViewer selectedLandId={selectedLandId} />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Blockchain Activity Log">
-          <ActivityLog
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Property Transfer Listing" defaultOpen={true}>
-          <RDPropertyTransferListing
-            contract={contract}
-            refreshKey={refreshKey}
-            onSelectLandId={setSelectedLandId}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Pending RD Final Approvals" defaultOpen={true}>
-          <PendingApprovalsTable
-            contract={contract}
-            role="rd"
-            refreshKey={refreshKey}
-            onSelectLandId={setSelectedLandId}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Uploaded Documents" defaultOpen={true}>
-          <UploadedDocumentsViewer
-            contract={contract}
-            selectedLandId={selectedLandId}
-            refreshKey={refreshKey}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="RD Final Approval">
-          <RDFinalApprovalForm
-            contract={contract}
-            latestCID={latestCID}
-            triggerRefresh={triggerRefresh}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Mark Owner Deceased">
-          <MarkOwnerDeceasedForm
-            contract={contract}
-            triggerRefresh={triggerRefresh}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Resolve Succession">
-          <ResolveSuccessionForm
-            contract={contract}
-            latestCID={latestCID}
-            triggerRefresh={triggerRefresh}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Transaction Reference Slip">
-          <TransactionReferenceSlip
-            contract={contract}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Temporary Transfer Certificate">
-          <TransferCertificateViewer selectedLandId={selectedLandId} />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Cancel Sale">
-          <CancelSaleForm
-            contract={contract}
-            triggerRefresh={triggerRefresh}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Cancel Sale">
+            <CancelSaleForm
+              contract={contract}
+              triggerRefresh={triggerRefresh}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
+        </DashboardRoleGate>
       </div>
     </>
   );

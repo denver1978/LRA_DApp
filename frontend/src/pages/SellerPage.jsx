@@ -134,6 +134,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import ConnectWallet from "../components/ConnectWallet";
+import DashboardRoleGate from "../components/DashboardRoleGate";
 import ViewSale from "../components/ViewSale";
 import QuickStatsCards from "../components/QuickStatsCards";
 import TransactionProgressTracker from "../components/TransactionProgressTracker";
@@ -192,75 +193,82 @@ export default function SellerPage({
           useRoleGuard={true}
         />
 
-        <LandIdSelector
-          landId={selectedLandId}
-          setLandId={setSelectedLandId}
-          label="Active Seller Land ID"
-        />
-
-        <CollapsibleSection title="My Properties" defaultOpen={true}>
-          <MyPropertiesTable
-            contract={contract}
-            account={account}
-            role="seller"
-            refreshKey={refreshKey}
-            onSelectLandId={setSelectedLandId}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Upload Sale Documents to IPFS" defaultOpen={true}>
-          <MultiFileUploadToIPFS
-            setLatestCID={setLatestCID}
-            contract={contract}
-            selectedLandId={selectedLandId}
-            resetKey={registrationResetKey}
+        <DashboardRoleGate
+          contract={contract}
+          account={account}
+          expectedRole="seller"
+          expectedRoleLabel="Seller"
+        >
+          <LandIdSelector
+            landId={selectedLandId}
+            setLandId={setSelectedLandId}
+            label="Active Seller Land ID"
           />
 
-          <div className="cid-box">
-            <strong>Latest Generated CID:</strong> {latestCID || "None yet"}
-          </div>
-        </CollapsibleSection>
+          <CollapsibleSection title="My Properties" defaultOpen={true}>
+            <MyPropertiesTable
+              contract={contract}
+              account={account}
+              role="seller"
+              refreshKey={refreshKey}
+              onSelectLandId={setSelectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="View Sale Details" defaultOpen={true}>
-          <ViewSale
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Upload Sale Documents to IPFS" defaultOpen={true}>
+            <MultiFileUploadToIPFS
+              setLatestCID={setLatestCID}
+              contract={contract}
+              selectedLandId={selectedLandId}
+              resetKey={registrationResetKey}
+            />
 
-        <CollapsibleSection title="Land / Sale Quick Stats">
-          <QuickStatsCards
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+            <div className="cid-box">
+              <strong>Latest Generated CID:</strong> {latestCID || "None yet"}
+            </div>
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Transaction Progress Tracker">
-          <TransactionProgressTracker
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="View Sale Details" defaultOpen={true}>
+            <ViewSale
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Blockchain Activity Log">
-          <ActivityLog
-            contract={contract}
-            refreshKey={refreshKey}
-            selectedLandId={selectedLandId}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Land / Sale Quick Stats">
+            <QuickStatsCards
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
 
-        <CollapsibleSection title="Request Property Sale" defaultOpen={true}>
-          <RequestSellForm
-            contract={contract}
-            triggerRefresh={triggerRefresh}
-            selectedLandId={selectedLandId}
-            latestCID={latestCID}
-          />
-        </CollapsibleSection>
+          <CollapsibleSection title="Transaction Progress Tracker">
+            <TransactionProgressTracker
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Blockchain Activity Log">
+            <ActivityLog
+              contract={contract}
+              refreshKey={refreshKey}
+              selectedLandId={selectedLandId}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Request Property Sale" defaultOpen={true}>
+            <RequestSellForm
+              contract={contract}
+              triggerRefresh={triggerRefresh}
+              selectedLandId={selectedLandId}
+              latestCID={latestCID}
+            />
+          </CollapsibleSection>
+        </DashboardRoleGate>
       </div>
     </>
   );
