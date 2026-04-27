@@ -85,8 +85,6 @@ export default function RegisterLandForm({
     }
   };
 
-  // Only auto-fill from latestCID if no selected pending registration
-  // and only if the form does not already have a CID.
   useEffect(() => {
     if (!latestCID) return;
     if (selectedPendingRegistration) return;
@@ -116,13 +114,38 @@ export default function RegisterLandForm({
       setOtherLocation(selectedPendingRegistration.location || "");
     }
 
-    // Only fetch metadata if there is a CID and we want a quiet refresh
     if (selectedPendingRegistration.metadataCID) {
       fetchMetadataAndAutofill(selectedPendingRegistration.metadataCID, false);
     }
   }, [selectedPendingRegistration]);
 
   const finalLocation = location === "Other" ? otherLocation : location;
+
+  const markPendingAsRegistered = () => {
+    if (!selectedPendingRegistration?.localId) return;
+
+    const saved = JSON.parse(
+      localStorage.getItem("pendingPreRegistrations") || "[]"
+    );
+
+    const updated = saved.map((item) =>
+      item.localId === selectedPendingRegistration.localId
+        ? {
+            ...item,
+            status: "registered",
+            registeredLandId: landId,
+            registeredAt: new Date().toISOString()
+          }
+        : item
+    );
+
+    localStorage.setItem(
+      "pendingPreRegistrations",
+      JSON.stringify(updated)
+    );
+
+    window.dispatchEvent(new Event("pendingPreRegistrationsUpdated"));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -181,19 +204,9 @@ export default function RegisterLandForm({
 
       await tx.wait();
 
-      if (selectedPendingRegistration?.localId) {
-        const saved = JSON.parse(localStorage.getItem("pendingPreRegistrations") || "[]");
+      markPendingAsRegistered();
 
-        const updated = saved.map((item) =>
-          item.localId === selectedPendingRegistration.localId
-            ? { ...item, status: "registered" }
-            : item
-        );
-
-        localStorage.setItem("pendingPreRegistrations", JSON.stringify(updated));
-      }
-
-      toast.success("Land registered successfully. Forms cleared for next registration...");
+      toast.success("Land registered successfully. Pending pre-registration cleared.");
 
       if (onRegisteredSuccess) {
         onRegisteredSuccess({

@@ -206,14 +206,6 @@ export default function SurveyorPage({
             />
           </CollapsibleSection>
 
-          <CollapsibleSection title="Land Coordinates" defaultOpen={true}>
-            <LandCoordinatesViewer
-              contract={contract}
-              selectedLandId={selectedLandId}
-              refreshKey={refreshKey}
-            />
-          </CollapsibleSection>
-
           <CollapsibleSection title="Land / Sale Quick Stats">
             <QuickStatsCards
               contract={contract}
@@ -244,6 +236,14 @@ export default function SurveyorPage({
               role="surveyor"
               refreshKey={refreshKey}
               onSelectLandId={setSelectedLandId}
+            />
+          </CollapsibleSection>
+
+          <CollapsibleSection title="Land Coordinates" defaultOpen={true}>
+            <LandCoordinatesViewer
+              contract={contract}
+              selectedLandId={selectedLandId}
+              refreshKey={refreshKey}
             />
           </CollapsibleSection>
 
