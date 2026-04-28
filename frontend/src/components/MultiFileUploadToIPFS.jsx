@@ -328,7 +328,7 @@ export default function MultiFileUploadToIPFS({
 
   return (
     <div className="card">
-      <h2 className="section-title">Multi-File Upload to IPFS</h2>
+      <h2 className="section-title">Pre-Registration</h2>
       <p className="section-note">
         For new land records, upload files first to generate a Metadata CID. For existing land records, you may load the land reference.
       </p>

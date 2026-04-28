@@ -206,15 +206,11 @@ export default function SellerPage({
             label="Active Seller Land ID"
           />
 
-          <CollapsibleSection title="My Properties" defaultOpen={true}>
-            <AutoRefreshPanel triggerRefresh={triggerRefresh} />
-            
-            <MyPropertiesTable
+          <CollapsibleSection title="Land / Sale Quick Stats">
+            <QuickStatsCards
               contract={contract}
-              account={account}
-              role="seller"
               refreshKey={refreshKey}
-              onSelectLandId={setSelectedLandId}
+              selectedLandId={selectedLandId}
             />
           </CollapsibleSection>
 
@@ -231,16 +227,20 @@ export default function SellerPage({
             </div>
           </CollapsibleSection>
 
-          <CollapsibleSection title="View Sale Details" defaultOpen={true}>
-            <ViewSale
+          <CollapsibleSection title="My Properties" defaultOpen={true}>
+            <AutoRefreshPanel triggerRefresh={triggerRefresh} />
+            
+            <MyPropertiesTable
               contract={contract}
+              account={account}
+              role="seller"
               refreshKey={refreshKey}
-              selectedLandId={selectedLandId}
+              onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>
 
-          <CollapsibleSection title="Land / Sale Quick Stats">
-            <QuickStatsCards
+          <CollapsibleSection title="View Sale Details" defaultOpen={true}>
+            <ViewSale
               contract={contract}
               refreshKey={refreshKey}
               selectedLandId={selectedLandId}
