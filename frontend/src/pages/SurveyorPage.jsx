@@ -235,6 +235,7 @@ export default function SurveyorPage({
               contract={contract}
               role="surveyor"
               refreshKey={refreshKey}
+              maxLandId={1000}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>

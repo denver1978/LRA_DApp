@@ -236,6 +236,7 @@ export default function BuyerPage({
             account={account}
             role="buyer"
             refreshKey={refreshKey}
+            maxLandId={1000}
             onSelectLandId={setSelectedLandId}
           />
         </CollapsibleSection>

@@ -224,6 +224,7 @@ export default function AssessorPage({
               contract={contract}
               role="assessor"
               refreshKey={refreshKey}
+              maxLandId={1000}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>
