@@ -415,6 +415,7 @@ export default function RDPage({
               contract={contract}
               role="rd"
               refreshKey={refreshKey}
+              maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>
@@ -424,6 +425,7 @@ export default function RDPage({
               contract={contract}
               selectedLandId={selectedLandId}
               refreshKey={refreshKey}
+              maxLandId={100}
             />
           </CollapsibleSection>
 
