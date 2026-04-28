@@ -224,7 +224,7 @@ export default function TreasuryPage({
               contract={contract}
               role="treasury"
               refreshKey={refreshKey}
-              maxLandId={1000}
+              maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>

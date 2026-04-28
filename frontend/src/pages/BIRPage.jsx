@@ -224,7 +224,7 @@ export default function BIRPage({
               contract={contract}
               role="bir"
               refreshKey={refreshKey}
-              maxLandId={1000}
+              maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>

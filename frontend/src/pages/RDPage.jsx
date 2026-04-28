@@ -405,6 +405,7 @@ export default function RDPage({
             <RDPropertyTransferListing
               contract={contract}
               refreshKey={refreshKey}
+              maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>

@@ -235,7 +235,7 @@ export default function SellerPage({
               account={account}
               role="seller"
               refreshKey={refreshKey}
-              maxLandId={1000}
+              maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>

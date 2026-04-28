@@ -6,7 +6,7 @@ export default function MyPropertiesTable({
   role,
   onSelectLandId,
   refreshKey,
-  maxLandId = 1000
+  maxLandId = 100
 }) {
   const [items, setItems] = useState([]);
   const [selectedLandId, setSelectedLandId] = useState("");
