@@ -184,7 +184,7 @@ export default function TreasuryPage({
           <LandIdSelector
             landId={selectedLandId}
             setLandId={setSelectedLandId}
-            label="Active Treasury Land ID"
+            label="Search"
           />
 
           <CollapsibleSection title="View Sale" defaultOpen={true}>
@@ -224,7 +224,7 @@ export default function TreasuryPage({
               contract={contract}
               role="treasury"
               refreshKey={refreshKey}
-              maxLandId={100}
+              //maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>

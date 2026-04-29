@@ -184,7 +184,7 @@ export default function BIRPage({
           <LandIdSelector
             landId={selectedLandId}
             setLandId={setSelectedLandId}
-            label="Active BIR Land ID"
+            label="Search"
           />
 
           <CollapsibleSection title="View Sale" defaultOpen={true}>
@@ -224,7 +224,7 @@ export default function BIRPage({
               contract={contract}
               role="bir"
               refreshKey={refreshKey}
-              maxLandId={100}
+              //maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>

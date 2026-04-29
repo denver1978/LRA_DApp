@@ -203,7 +203,7 @@ export default function SellerPage({
           <LandIdSelector
             landId={selectedLandId}
             setLandId={setSelectedLandId}
-            label="Active Seller Land ID"
+            label="Search"
           />
 
           <CollapsibleSection title="Land / Sale Quick Stats">
@@ -235,7 +235,7 @@ export default function SellerPage({
               account={account}
               role="seller"
               refreshKey={refreshKey}
-              maxLandId={100}
+              //maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>

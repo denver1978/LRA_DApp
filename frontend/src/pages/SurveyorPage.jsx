@@ -195,7 +195,7 @@ export default function SurveyorPage({
           <LandIdSelector
             landId={selectedLandId}
             setLandId={setSelectedLandId}
-            label="Active Surveyor Land ID"
+            label="Search"
           />
 
           <CollapsibleSection title="View Sale" defaultOpen={true}>
@@ -235,7 +235,7 @@ export default function SurveyorPage({
               contract={contract}
               role="surveyor"
               refreshKey={refreshKey}
-              maxLandId={100}
+              //maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>

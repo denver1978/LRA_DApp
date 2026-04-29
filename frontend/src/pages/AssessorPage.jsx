@@ -184,7 +184,7 @@ export default function AssessorPage({
           <LandIdSelector
             landId={selectedLandId}
             setLandId={setSelectedLandId}
-            label="Active Assessor Land ID"
+            label="Search"
           />
 
           <CollapsibleSection title="View Sale" defaultOpen={true}>
@@ -224,7 +224,7 @@ export default function AssessorPage({
               contract={contract}
               role="assessor"
               refreshKey={refreshKey}
-              maxLandId={100}
+              //maxLandId={100}
               onSelectLandId={setSelectedLandId}
             />
           </CollapsibleSection>
