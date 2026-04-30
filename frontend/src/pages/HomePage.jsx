@@ -229,10 +229,10 @@ export default function HomePage({ account, connectWallet, disconnectWallet, con
     </>
   );
 }
+
 */}
 
-
-//------ Final version ---
+//------ Final version ------
 
 import useDashboardAccess from "../hooks/useDashboardAccess";
 import { Link } from "react-router-dom";
@@ -321,10 +321,10 @@ export default function HomePage({ account, connectWallet, disconnectWallet, con
 
       <div className="page-container">
 
-        {/* MOBILE NOTICE */}
+        {/* MOBILE NOTICE */} 
         {isMobile && <MobileNotice />}
 
-        {/* ✅ WALLET SECTION (FIXED) */}
+        {/* ✅ WALLET SECTION (FIXED) */} 
         <div className="home-wallet-status">
 
           <ConnectWallet
@@ -442,3 +442,4 @@ export default function HomePage({ account, connectWallet, disconnectWallet, con
     </>
   );
 }
+
