@@ -1,3 +1,5 @@
+{/*
+
 import { useEffect, useState } from "react";
 
 export default function useDashboardAccess(contract, account, maxLandId = 20) {
@@ -94,3 +96,67 @@ export default function useDashboardAccess(contract, account, maxLandId = 20) {
 
   return { allowedRoles, loadingRoles };
 } 
+
+*/}
+
+import { useEffect, useState } from "react";
+
+export default function useDashboardAccess(contract, account, maxLandId = 20) {
+  const [allowedRoles, setAllowedRoles] = useState(new Set());
+  const [loadingRoles, setLoadingRoles] = useState(false);
+
+  useEffect(() => {
+    const detectRoles = async () => {
+      if (!contract || !account) {
+        setAllowedRoles(new Set());
+        return;
+      }
+
+      try {
+        setLoadingRoles(true);
+
+        const wallet = account.toLowerCase();
+        const roles = new Set();
+
+        // ✅ Allow any connected wallet to open Seller and Buyer dashboards.
+        // Actual ownership/buyer validation still happens inside the tables/forms.
+        roles.add("seller");
+        roles.add("buyer");
+
+        const [
+          owner,
+          surveyor,
+          bir,
+          cityTreasury,
+          assessor,
+          rd
+        ] = await Promise.all([
+          contract.owner().catch(() => null),
+          contract.surveyor().catch(() => null),
+          contract.bir().catch(() => null),
+          contract.cityTreasury().catch(() => null),
+          contract.assessor().catch(() => null),
+          contract.rd().catch(() => null)
+        ]);
+
+        if (owner?.toLowerCase() === wallet) roles.add("admin");
+        if (surveyor?.toLowerCase() === wallet) roles.add("surveyor");
+        if (bir?.toLowerCase() === wallet) roles.add("bir");
+        if (cityTreasury?.toLowerCase() === wallet) roles.add("treasury");
+        if (assessor?.toLowerCase() === wallet) roles.add("assessor");
+        if (rd?.toLowerCase() === wallet) roles.add("rd");
+
+        setAllowedRoles(roles);
+      } catch (error) {
+        console.error("Role detection error:", error);
+        setAllowedRoles(new Set());
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    detectRoles();
+  }, [contract, account, maxLandId]);
+
+  return { allowedRoles, loadingRoles };
+}
